@@ -179,22 +179,63 @@
 
 ---
 
-## ディレクトリ構成（予定）
+## 社会動向分析ワークフロー（Phase 0 / 実装済み）
+
+株式売買判断の前段として、**社会・経済・政治の動向を毎日深夜0時に自動収集・分析**するワークフローです。
+無料データソースのみを使用します。
+
+### 収集データソース（すべて無料）
+
+| カテゴリ | ソース | 取得方法 |
+|---------|--------|---------|
+| 国内政治・経済ニュース | NHK News RSS | RSS取得 |
+| 国内経済ニュース | Reuters Japan RSS | RSS取得 |
+| 首相・官邸動向 | 首相官邸 RSS | RSS取得 |
+| 日銀金融政策 | 日本銀行 新着情報RSS | RSS取得 |
+| 財務省発表 | 財務省 新着情報RSS | RSS取得 |
+| 為替・海外株価 | Yahoo Finance（yfinance） | Python |
+| 米国経済指標 | FRED API（無料） | REST API |
+| 企業IR・開示情報 | EDINET API（金融庁） | REST API |
+
+### 分析アウトプット
+
+毎日深夜0時に以下を生成し `reports/` に保存・PRを作成：
+
+```
+- 本日の重要ニュースTOP5（市場影響度順）
+- 為替・海外市場の動向サマリー
+- 政治・政策リスク評価（0〜10点）
+- 明日の日本株市場への影響予測
+- 総合判定：強気 / やや強気 / 中立 / やや弱気 / 弱気
+- 注目セクター・銘柄
+```
+
+### 実行スケジュール
+
+| トリガー | 実行時刻 | 役割 |
+|---------|---------|------|
+| 社会動向分析トリガー | 毎日 **00:00 JST** | ニュース・指標収集 → Claude分析 → GitHub PR |
+
+---
+
+## ディレクトリ構成
 
 ```
 stock-trading-workflow/
-├── README.md               # 本ドキュメント
+├── README.md                           # 本ドキュメント
+├── reports/                            # 社会動向分析レポート（自動生成）
+│   └── YYYYMMDD_social_analysis.md
 ├── docs/
-│   ├── architecture.md     # 詳細アーキテクチャ
-│   ├── api_setup.md        # API設定手順
-│   └── risk_management.md  # リスク管理ルール
+│   ├── architecture.md                 # 詳細アーキテクチャ
+│   ├── api_setup.md                    # API設定手順
+│   └── risk_management.md             # リスク管理ルール
 ├── src/
-│   ├── data/               # データ取得（J-Quants）
-│   ├── analysis/           # テクニカル指標算出
-│   ├── ai/                 # Claude連携・判断ロジック
-│   ├── trading/            # kabuステーションAPI連携
-│   ├── monitor/            # 取引中監視
-│   └── notify/             # Slack通知
-├── tests/                  # テストコード
-└── logs/                   # 実行ログ
+│   ├── data/                           # データ取得（J-Quants）
+│   ├── analysis/                       # テクニカル指標算出
+│   ├── ai/                             # Claude連携・判断ロジック
+│   ├── trading/                        # kabuステーションAPI連携
+│   ├── monitor/                        # 取引中監視
+│   └── notify/                         # Slack通知
+├── tests/                              # テストコード
+└── logs/                               # 実行ログ
 ```
